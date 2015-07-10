@@ -1,0 +1,4 @@
+[0m[[0mdebug[0m] [0mCopy resource mappings: [0m
+[0m[[0mdebug[0m] [0m	(/home/dan/activator/guru/conf/application.conf,/home/dan/activator/guru/target/scala-2.11/classes/application.conf)[0m
+[0m[[0mdebug[0m] [0m	(/home/dan/activator/guru/conf/routes,/home/dan/activator/guru/target/scala-2.11/classes/routes)[0m
+[0m[[0mdebug[0m] [0m	(/home/dan/activator/guru/conf/logback.xml,/home/dan/activator/guru/target/scala-2.11/classes/logback.xml)[0m
