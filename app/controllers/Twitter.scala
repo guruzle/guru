@@ -6,6 +6,7 @@ import play.api.Play._
 import play.api.mvc._
 import play.api.libs.ws._
 
+
 case class BearerToken (tokenType:String,accessToken:String)
 
 class Twitter @Inject() (ws: WSClient) extends Controller {
@@ -21,28 +22,30 @@ class Twitter @Inject() (ws: WSClient) extends Controller {
   val contentType = current.configuration.getString("guru.twitter.contentType").getOrElse("unknown")
   val tokenUrl = current.configuration.getString("guru.twitter.tokenUrl").getOrElse("unknown")
   val grantType = current.configuration.getString("guru.twitter.grantType").getOrElse("unknown")
-  def getTweets(geoCode:String) = Action.async {//get bearer token redirect
+  def getTweets(geoCode:String, filter:String) = Action.async {//get bearer token redirect
     ws.url(tokenUrl).withHeaders("Authorization" -> authType)
       .withHeaders("Content-Type"->contentType)
       .post(grantType).map {
-        response =>
-          val bearerContents:JsResult[BearerToken] = response.json.validate[BearerToken]
-          val bearerAuth = bearerContents.map(auth => auth.accessToken).get
-          Redirect(routes.Twitter.getTweetsGeo(geoCode,bearerAuth))
-      }
+      response =>
+        val bearerContents:JsResult[BearerToken] = response.json.validate[BearerToken]
+        val bearerAuth = bearerContents.map(auth => auth.accessToken).get
+        Redirect(routes.Twitter.getTweetsAuth(geoCode,filter,bearerAuth))
+    }
   }
-  def getTweetsGeo(geoCode:String, auth:String) = Action.async { //make call with bearer token
-      val count:String = "10"
-      val distance:String = "100"
-      val authorization:String = "Bearer " + auth
-      val url:String = "https://api.twitter.com/1.1/search/tweets.json?q=''&count=" +
-        count + "&result_type=recent&geocode=" + geoCode + "," + distance + "km"
-      ws.url(url)
-        .withHeaders("Authorization" -> authorization)
-        .get()
-        .map{
-          response => Ok(response.json)
-         }
+  def getTweetsAuth(geoCode:String, filter:String, auth:String) = Action.async { //make call with bearer token
+  val count:String = "25"
+    val distance:String = "1"
+    val authorization:String = "Bearer " + auth
+    val url:String =  if (filter == "__NONE__")
+      "https://api.twitter.com/1.1/search/tweets.json?q=''&count=" + count + "&result_type=recent&geocode=" + geoCode + "," + distance + "km"
+    else
+      "https://api.twitter.com/1.1/search/tweets.json?q='" + filter + "'&count=" + count + "&result_type=recent&geocode=" + geoCode + "," + distance + "km"
+    ws.url(url)
+      .withHeaders("Authorization" -> authorization)
+      .get()
+      .map{
+      response => Ok(response.json)
+    }
   }
 
 
